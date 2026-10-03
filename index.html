@@ -95,6 +95,7 @@ h2{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,42px);mar
 .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{border:2px solid var(--ink);background:var(--panel);border-radius:99px;padding:3px 14px;font-size:14px;font-weight:700}
+.sortbtn{border-style:dashed}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
 #q{margin-left:auto;flex:1 1 200px;max-width:300px;min-width:0;font:inherit;border:2px solid var(--ink);border-radius:99px;padding:5px 16px;background:var(--panel);color:var(--ink)}
 
@@ -281,7 +282,7 @@ const $ = (s,r=document)=>r.querySelector(s);
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const stage = id => STAGES.find(s=>s.id===id) || STAGES[0];
 const no = g => "No." + String(GAMES.indexOf(g)+1).padStart(3,"0");
-const state = { room:"ALL", status:"ALL", q:"" };
+const state = { room:"ALL", status:"ALL", q:"", sort:"new" };  /* sort: "new" = 公開日が新しい順（初期表示） / "old" = 古い順 */
 
 /* ---- コンセプトポスター（画像が未登録のときに描く絵） ---- */
 function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -365,16 +366,20 @@ function card(g){
 
 function filtered(){
   const q=state.q.trim().toLowerCase();
+  const key = g => g.released || "9999";   /* 未公開の作品は「いちばん新しい」扱い */
+  const dir = state.sort==="old" ? 1 : -1;
   return GAMES.filter(g =>
     (state.room==="ALL"||g.rooms.includes(state.room)) &&
     (state.status==="ALL"||stage(g.status).group===state.status) &&
-    (!q||[g.title,g.genre,g.description,...(g.technology||[])].join(" ").toLowerCase().includes(q)));
+    (!q||[g.title,g.genre,g.description,...(g.technology||[])].join(" ").toLowerCase().includes(q)))
+    .sort((a,b)=> key(a)<key(b) ? -dir : key(a)>key(b) ? dir : 0);
 }
 function drawGrid(){
   const list=filtered();
   $("#grid").innerHTML = list.length ? list.map(card).join("")
     : `<div class="empty">この条件の展示はまだありません。<br>NEXT EXHIBIT — 準備中</div>`;
   $("#count").textContent = `${list.length} / ${GAMES.length} 作品を表示中`;
+  $("#sort").textContent = state.sort==="new" ? "公開日：新しい順 ↓" : "公開日：古い順 ↑";
   $("#roomnow").textContent = state.room==="ALL" ? "すべて" : (ROOMS.find(r=>r.id===state.room)||{}).label||state.room;
   document.querySelectorAll("[data-room]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.room===state.room));
   document.querySelectorAll("[data-status]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.status===state.status));
@@ -411,6 +416,7 @@ function home(){
         <button class="chip" data-status="dev">開発中</button>
         <button class="chip" data-status="idea">アイデア</button>
       </div>
+      <button class="chip sortbtn" id="sort" data-sort="1" aria-label="並び順を切り替える"></button>
       <span id="count" class="soon"></span>
       <input id="q" type="search" placeholder="作品名・技術でさがす" aria-label="作品を検索" value="${esc(state.q)}">
     </div>
@@ -422,8 +428,9 @@ function home(){
     <p>編集中です。</p>
   </div></section>`;
   $("#app").onclick = e => {
-    const b=e.target.closest("[data-room],[data-status]"); if(!b) return;
-    if(b.dataset.room) state.room=b.dataset.room; else state.status=b.dataset.status;
+    const b=e.target.closest("[data-room],[data-status],[data-sort]"); if(!b) return;
+    if(b.dataset.sort) state.sort = state.sort==="new" ? "old" : "new";
+    else if(b.dataset.room) state.room=b.dataset.room; else state.status=b.dataset.status;
     drawGrid();
   };
   $("#q").oninput = e => { state.q=e.target.value; drawGrid(); };
