@@ -46,7 +46,8 @@ h1 span{display:block}
 h1 .l2{color:var(--panel);-webkit-text-stroke:2.5px var(--ink);text-shadow:6px 6px 0 var(--coral)}
 .sub{font-family:var(--display);font-weight:500;font-size:clamp(15px,2vw,22px);margin:22px 0 0;display:flex;align-items:center;gap:12px}
 .sub::before{content:"";width:44px;height:4px;background:var(--cyan)}
-.lead{max-width:34em;color:var(--ink-soft);margin:16px 0 26px}
+.lead{color:var(--ink-soft);margin:16px 0 0}
+.lead span{display:block;word-break:keep-all;overflow-wrap:anywhere}
 .btns{display:flex;gap:12px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:8px;font-weight:900;text-decoration:none;border:2.5px solid var(--ink);border-radius:99px;padding:10px 22px;background:var(--panel);box-shadow:4px 4px 0 var(--ink);transition:transform .15s,box-shadow .15s}
 .btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
@@ -397,8 +398,7 @@ function home(){
       <div class="eyebrow"><b>OPEN</b> NOW EXHIBITING ${GAMES.length} WORKS / ${ROOMS.filter(r=>cnt(r.id)).length} ROOMS</div>
       <h1><span>GAME</span><span class="l2">MUSEUM</span></h1>
       <p class="sub">My Game Collection</p>
-      <p class="lead">自分で作ったゲームを、一つずつ展示作品としてコレクションしていくゲーム博物館。完成した作品も、まだ開発中の作品も、そのまま展示しています。</p>
-      <div class="btns"><a class="btn play" href="#exhibition">展示を見てまわる</a><a class="btn" href="#about">この博物館について</a></div>
+      <p class="lead"><span>自分で作ったゲームを、<wbr>一つずつ展示作品として<wbr>コレクションしていくゲーム博物館。</span><span>完成した作品も、<wbr>まだ開発中の作品も、<wbr>そのまま展示しています。</span></p>
     </div>
   </div></section>
 
